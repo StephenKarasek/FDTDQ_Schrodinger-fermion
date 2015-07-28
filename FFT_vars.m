@@ -1,4 +1,4 @@
-function [] = FFT_vars(SPACE, TIME, PULSE, ITP)
+function [DATA] = FFT_vars(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG)
 %%
 
 
@@ -6,7 +6,7 @@ function [] = FFT_vars(SPACE, TIME, PULSE, ITP)
 
 
 
-
+SaveDirectory = DATA.PARAMS_.saveDir;
 %%
 %**************************************************************************
 %   Real Wavefunction(t,p)

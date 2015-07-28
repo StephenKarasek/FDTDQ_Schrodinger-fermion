@@ -1,11 +1,13 @@
-function [varargout] = FDM_run(varargin)
+function [DATA] = FDM_run(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG)
+% function [varargout] = FDM_run(varargin)
 %% FDTD-Q
-
+CONSTANTS;
 
 %% Data Definitions
 fprintf('\n\n\t--> BUILDING DATA STRUCTURE... ');
 
-FDM_vars();
+% evalin('caller',FDM_vars(SPACE, TIME, PULSE, ITP, PARAMS_, DEBUG));
+[DATA] = FDM_vars(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG);
 
 fprintf('\t\t... DONE!');
 
@@ -226,7 +228,7 @@ end
 %     FiniteDifferenceMethod(V_eff, SPACE.delta, TIME.delta, DEBUG.FDM, DEBUG.BC,...
 %     R_current, I_current, 1);
 
-% Initial run of Im(psi) to start off leapfrog process; t=t+TIME.delta/2;
+% t=t+TIME.delta/2;
 % I_next(2:SPACE.N-1) = I_current(2:SPACE.N-1) ...
 %     + s1*(R_current(3:SPACE.N)-2*R_current(2:SPACE.N-1)+R_current(1:SPACE.N-2))...
 %     - s2*V_eff(2:SPACE.N-1).*R_current(2:SPACE.N-1);
@@ -574,40 +576,6 @@ for n=1:length(FDTD_Total_Mem)
     % Run initialization command
 %     eval(InitializeString);
 end
-
-
-                        
-                        
-%% Clear Memory
-% n=1;
-% % for n=1:length(DATA.FDTD_)
-% %     clearlist.FDTDQ{n} = getfield(DATA.FDTDvars{n};
-% % end; n=n+1;
-% 
-% 
-% clearlist.FDM{n} = 'I_current'; n=n+1;
-% clearlist.FDM{n} = 'I_initial'; n=n+1;
-% clearlist.FDM{n} = 'I_next'; n=n+1;
-% 
-% clearlist.FDM{n} = 'R_current'; n=n+1;
-% clearlist.FDM{n} = 'R_initial'; n=n+1;
-% clearlist.FDM{n} = 'R_next'; n=n+1;
-% 
-% clearlist.FDM{n} = 'V_pot'; n=n+1;
-% clearlist.FDM{n} = 'psi'; n=n+1;
-% clearlist.FDM{n} = 'prob_density'; n=n+1;
-% % clearlist.FDM{n} = 'Psi_total'; n=n+1;
-% clearlist.FDM{n} = 'V_eff'; n=n+1;
-% clearlist.FDM{n} = 'V_coulomb'; n=n+1;
-% clearlist.FDM{n} = 'V_laser'; n=n+1;
-% % clearlist.FDM{n} = 'V_atom'; n=n+1;
-% clearlist.FDM{n} = 'V_ext'; n=n+1;
-% 
-% try
-% clear(clearlist.FDM{:});
-% catch
-% end
-% % clear
 
 
 

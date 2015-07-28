@@ -1,14 +1,14 @@
-function [varargout] = FFT_run(varargin)
+function [DATA] = FFT_run(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG)
 %% FOURIER_TRANS
 
 % Must be run AFTER FDTD_Q
-
+CONSTANTS;
 
 %% Save
 
 fprintf('\n\n\t--> BUILDING DATA STRUCTURE... ');
 
-FFT_vars();
+DATA = FFT_vars(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG);
 
 fprintf('\t\t... DONE!');
 
@@ -111,62 +111,21 @@ end
 %**************************************************************************
 % Initialize Saved Arrays
 %--------------------------------------------------------------------------
-% fft_TOTAL = zeros(idx.END, SPACE.N0, 'like', [1+1i]);
-% fft_REAL = zeros(idx.END, SPACE.N0);
-% fft_IMAG = zeros(idx.END, SPACE.N0);
-
-
 fprintf('\n\n\t--> Pre-allocating memory (saves)...\t\t:\n\n');
-%**************************************************************************
-% Initialize Saved Arrays
-%--------------------------------------------------------------------------
-% Psi_TOTAL = zeros(idx.END, N, 'like', [1+1i]);
-% Psi_REAL = zeros(idx.END, N);
-% Psi_IMAG = zeros(idx.END, N);
-
 
 for n=1:length(FFT_Save_Mem)
-
-    % Requires variable name search from earlier
-%     InitializeString = 
     [RESULTS] = VarInitialize(idx,FFT_Save_Mem{n});
-    
-    % Run initialization command
-%     eval(InitializeString);
 end
 
 
 %**************************************************************************
 % Load Vars
 %--------------------------------------------------------------------------
-% Psi_TOTAL(1:idx.length,1:FDTDQ_file.info{1}(2)) =...
-%     FDTDQ_file.IO{1}.Psi_TOTAL(1:idx.length,1:FDTDQ_file.info{1}(2));
-% 
-% Psi_REAL(1:idx.length,1:FDTDQ_file.info{1}(2)) =...
-%     FDTDQ_file.IO{1}.Psi_REAL(1:idx.length,1:FDTDQ_file.info{1}(2));
-% 
-% Psi_IMAG(1:idx.length,1:FDTDQ_file.info{2}(2)) =...
-%     FDTDQ_file.IO{2}.Psi_IMAG(1:idx.length,1:FDTDQ_file.info{1}(2));
-
-% Psi_TOTAL = FDTD_file.IO{1}.Psi_TOTAL;
-% Psi_I = FDTDQ_file.IO{2}.Psi_I;
-% Psi_R = FDTDQ_file.IO{1}.Psi_R;
-
-
 fprintf('\n\n\t--> Pre-allocating memory (loads)...\t\t:\n\n');
+
 for n=1:length(FFT_Load_Mem)
-
-    % Requires variable name search from earlier
-%     InitializeString = 
     [RESULTS] = LoadFormat(idx,FFT_Load_Mem{n});
-    
-    % Run initialization command
-%     eval(InitializeString);
 end
-
-
-
-
 
 
 %==========================================================================
@@ -294,19 +253,13 @@ Centroid_X(idx.count) = trapz(conj(Psi_REAL(idx.count,:)+1*Psi_IMAG(idx.count,:)
 %**************************************************************************
 % Population State
 %--------------------------------------------------------------------------
-% N0_ = round(SPACE.N/2)+1;
-% Pop_rng = (floor(length(FreqShift_)/2))+1 + ...
-%     ((-PULSE.NumCalcStates*SPACE.ZeroPad_Factor):...
-%     PULSE.NumCalcStates*(SPACE.ZeroPad_Factor+1));
-% Pop_Freq = FreqShift_(Pop_rng);
-
-% (2*(PULSE.NumCalcStates*(SPACE.ZeroPad_Factor+1))-1)
-% ceil(size(PopulationStateNorm_GIVEN,2)/2)
-
-% Pop_rng = ...
-%     (ceil(length(FreqShift_)/2))-floor(size(PopulationStateNorm_GIVEN,2)/2):...
-%     (ceil(length(FreqShift_)/2))+floor(size(PopulationStateNorm_GIVEN,2)/2);
-
+% >>>   Population of states function here works really only for simplistic
+%       systems, such as square wells or harmonic oscillators.
+% 
+% >>>   In next version (once next paper is released), hydrogen population
+%       will be included.
+% 
+%..........................................................................
 
 SpreadStates_radius = floor(PULSE.SpreadStates/2);
 Pop_rng = ...
@@ -317,7 +270,6 @@ Pop_Freq = FreqShift_(Pop_rng);
 [PopulationState(idx.count,:),PopulationStateNorm_GIVEN(idx.count,:),...
 PopulationStateNorm_CALC(idx.count,:),PopulationStateNorm_VIEW(idx.count,:)] ...
 = StatePopulations(SIM, PULSE, SPACE, Pop_Freq);
-
 
 if idx.count == DATA.FFT_MEM.MaxTimeSteps
 
@@ -337,27 +289,6 @@ for n=1:length(FFT_Save_Mem)
     fprintf('\t\t%f\tSeconds\n', toc);
 end
 
-    
-% Clear LOAD Variable
-% clear Psi_TOTAL Psi_REAL Psi_IMAG;
-% pause(1);
-    
-%     fprintf('\n\n\t\t\t***COPYING DATA TO DISK***\n\n:'); tic;
-% 
-% %         fprintf('\n\tfft_TOTAL\n\n:'); tic;
-% %     FFT_file.IO{1}.fft_TOTAL(idx.START:idx.END,1:FFT_file.info{n}(2)) = ...
-% %         fft_TOTAL(1:idx.count,1:FFT_file.info{1}(2));
-% fprintf('\n\tfft_REAL\n\n:'); tic;
-%         FFT_file.IO{1}.fft_REAL(idx.START:idx.END,1:FFT_file.info{1}(2)) = ...
-%         fft_REAL(1:idx.count,1:FFT_file.info{1}(2));
-% fprintf('\n\tfft_IMAG\n\n:'); tic;
-%         FFT_file.IO{2}.fft_IMAG(idx.START:idx.END,1:FFT_file.info{2}(2)) = ...
-%         fft_IMAG(1:idx.count,1:FFT_file.info{2}(2));
-% %     length(idx.START:idx.END)    
-%     
-%     fprintf('\t\t%f\tSeconds\n', toc);
-% %     end
-    
 
 %**************************************************************************
 % CLEAR MEMORY
@@ -365,16 +296,9 @@ end
 fprintf('\n\n\t\t\t***CLEARING MEMORY***\n\n:');% tic;
 
 for n=1:length(FFT_Total_Mem)
-
-    % Requires variable name search from earlier
     [RESULTS] = VarInitialize(idx,FFT_Total_Mem{n});
-    
-    % Run initialization command
-%     eval(InitializeString);
 end
 
-
-    
 
 %**************************************************************************
 % RESET INDEX
@@ -385,9 +309,6 @@ end
     
     if idx.END>TIME.saveNum; idx.END = TIME.saveNum; end
     
-    
-    
-
 
 %**************************************************************************
 % LOAD FROM DISK
@@ -398,9 +319,6 @@ for n=1:length(FFT_Load_Mem)
     % Requires variable name search from earlier
     [RESULT] = LoadFormat(idx,FFT_Load_Mem{n});
     
-    % Run initialization command
-%     eval(LoadFormat);
-
 end
     
 end
@@ -408,8 +326,7 @@ end
 % Iterate Memory Index
 idx.count = idx.count+1;
     
-    
-    
+   
     
 show_t = (TIME.saveNum/TIME.save);
 if (show_t>1e6)
@@ -426,16 +343,11 @@ fprintf('\tMomentum(P-space)\t:::\t\t[%d\tof\t%d])\t=\t<%d*(s)>\n',...
         
     end
     
-    
-
-
+   
 
 end
 
 
-
-% Come up with a better method to make sure memory index stepping isn't
-% stupid.
 idx.count = idx.count-1;
 
 
@@ -456,12 +368,9 @@ for n=1:length(FFT_Save_Mem)
     fprintf('\n%s\t:', getfield(FFT_Save_Mem{n},'VarName')); tic;
     
     [RESULTS] = SaveFormat(idx,FFT_Save_Mem{n});
-
-%     eval(SaveString);
     
     fprintf('\t\t%f\tSeconds\n', toc);
 end
-
 
 
 
@@ -471,177 +380,8 @@ end
 fprintf('\n\n\t\t\t***CLEARING MEMORY***\n\n:');% tic;
 
 for n=1:length(FFT_Total_Mem)
-
-    % Requires variable name search from earlier
     [RESULTS] = CleanUpVars(FFT_Total_Mem{n});
-    
-    % Run initialization command
-%     eval(InitializeString);
 end
-
-
-
-
-%**************************************************************************
-% Clear LOAD Variable (from RAM)
-%--------------------------------------------------------------------------
-% clear Psi_TOTAL Psi_REAL Psi_IMAG;
-% pause(1);
-
-%     evalstr = ['clear ' FFT_file.vars{n} ';'];
-%     eval(evalstr);
-    
-
-
-%**************************************************************************
-% Write SAVE Variable (to HDD)
-%--------------------------------------------------------------------------
-% fprintf('\nSaving FFT (Momentum Space) Data...\n');
-tic;
-% for n = 1:length(FFT_file.vars)
-%     
-% fprintf('\n%s\t:', FFT_file.vars{n});
-%     save(save_filename, FFT_file.vars{n}, '-append');
-%     fprintf('\t\t%f\tSeconds\n', toc);
-% end
-
-
-
-% for n = 1:length(FFT_file.vars)
-
-
-%     fprintf('\n%s\t:', FFT_file.vars{n});    
-% Save var
-%     evalstr = ['FFT_file.IO{n}.' FFT_file.vars{n} ' = ' FFT_file.vars{n} ';'];
-%     eval(evalstr);
-%     
-%     fprintf('\t\t%f\tSeconds\n', toc);
-%             
-% end
-% FFT_file.IO{n}.fft_TOTAL(idx.START:idx.START+idx.count-1,1:SPACE.N0) = ...
-%     fft_TOTAL(1:idx.count,1:SPACE.N0);
-% FFT_file.IO{1}.fft_REAL(idx.START:idx.START+idx.count-1,1:SPACE.N0) = ...
-%     fft_REAL(1:idx.count,1:SPACE.N0);
-% FFT_file.IO{2}.fft_IMAG(idx.START:idx.START+idx.count-1,1:SPACE.N0) = ...
-%     fft_IMAG(1:idx.count,1:SPACE.N0);
-% fprintf('\t\t%f\tSeconds\n', toc);
-
-
-% fprintf('\n%s\t:', FFT_file.vars{n});
-% % Save var    
-%     if (idx.length-idx.count)>1
-%     evalstr = ['FFT_file.IO{n}.' ...
-%         FFT_file.vars{n} '(' num2str(idx.START) ':' num2str(idx.END) ',:) = ' ...
-%         FFT_file.vars{n} '(' num2str(1) ':' num2str(idx.END-idx.START+1) ',:);'];
-%     eval(evalstr);
-%     end
-%     fprintf('\t\t%f\tSeconds\n', toc);
-    
-%     length(idx.START:idx.END)
-%     length(1:idx.END-idx.START+1)
-
-
-
-
-
-%% Load ALL of FFT data
-
-% clear fft_TOTAL fft_REAL fft_IMAG;
-% pause(1);
-
-% T
-% fprintf('\n\n\t\t\t***LOADING ALL FFT DATA***\n\n:'); tic;
-    
-% 
-% fft_TOTAL = FFT_file.IO{1}.fft_TOTAL(1:TIME.saveNum,1:FFT_file.info{1}(2));
-% fft_REAL = FFT_file.IO{1}.fft_REAL(1:TIME.saveNum,1:FFT_file.info{1}(2));
-% fft_IMAG = FFT_file.IO{2}.fft_IMAG(1:TIME.saveNum,1:FFT_file.info{2}(2));
-
-
-%% Save 
-
-% 
-% taxis = delta_t*(1:size(fft_REAL,1));
-% xaxis = SPACE.delta*(1:size(fft_REAL,2));
-% faxis = fftaxis(xaxis);
-
-% 
-% n=0;
-% %**************************************************************************
-% %  Time Axis
-% %--------------------------------------------------------------------------
-% n=n+1;
-% FREQ_AXIS_file.vars{n} = 'taxis';
-% FREQ_AXIS_file.type{n} = 'real';
-% FREQ_AXIS_file.info{n} = [TIME.saveNum 1];
-% 
-% 
-% %**************************************************************************
-% %  X Axis
-% %--------------------------------------------------------------------------
-% n=n+1;
-% FREQ_AXIS_file.vars{n} = 'xaxis';
-% FREQ_AXIS_file.type{n} = 'real';
-% FREQ_AXIS_file.info{n} = [TIME.saveNum 1];
-% 
-% 
-% %**************************************************************************
-% %  Freq Axis
-% %--------------------------------------------------------------------------
-% n=n+1;
-% FREQ_AXIS_file.vars{n} = 'faxis';
-% FREQ_AXIS_file.type{n} = 'real';
-% FREQ_AXIS_file.info{n} = [TIME.saveNum 1];
-% 
-% 
-% 
-% %**************************************************************************
-% %  Time Axis
-% %--------------------------------------------------------------------------
-% for n=1:length(FREQ_AXIS_file.vars)
-% FREQ_AXIS_file.fpath{n} = [SaveDirectory '\' FREQ_AXIS_file.vars{n} '.mat'];
-% save(FREQ_AXIS_file.fpath{n}, FREQ_AXIS_file.vars{n}, '-v7.3');
-% end
-
-
-%% 
-% % Clear
-% clear fft_TOTAL;
-% pause(1);
-% 
-% % IO Settings    
-% FFT_file.IO{n} = matfile(FFT_file.fpath{n});
-% FFT_file.IO{n}.Properties.Writable = true;
-
-
-                        
-%% Clear Memory
-
-clearvars   Psi_REAL Psi_IMAG PDF_pos fft_TOTAL fft_REAL fft_IMAG taxis xaxis faxis;
-
-n=1;
-% for n=1:length(DATA.FDTD_)
-%     clearlist.FDTDQ{n} = getfield(DATA.FDTDvars{n};
-% end; n=n+1;
-
-
-clearlist.FFT{n} = 'Psi_IMAG'; n=n+1;
-clearlist.FFT{n} = 'Psi_REAL'; n=n+1;
-clearlist.FFT{n} = 'PDF_pos'; n=n+1;
-
-clearlist.FFT{n} = 'fft_REAL'; n=n+1;
-clearlist.FFT{n} = 'fft_IMAG'; n=n+1;
-clearlist.FFT{n} = 'FreqShift'; n=n+1;
-
-clearlist.FFT{n} = 'taxis'; n=n+1;
-clearlist.FFT{n} = 'xaxis'; n=n+1;
-clearlist.FFT{n} = 'faxis'; n=n+1;
-
-clear(clearlist.FFT{:});
-
-% clear
-
-
 
 
 

@@ -145,7 +145,7 @@ load([ParameterFilePath ParameterFileList{ParamFileNum}]);
 Runtime_CPU.TOTAL = tic;
 Runtime_CPU.Setup = tic;
 % Create Directory
-DATA_STORAGE(SPACE, TIME, SIM);
+DATA = DATA_STORAGE(SPACE, TIME, SIM, LASER, DEBUG);
 
 % TIMING
 disp('CPU::: Setup');
@@ -170,7 +170,9 @@ toc(Runtime_CPU.Setup);
 % FDTD-Q
 %--------------------------------------------------------------------------
 Runtime_CPU.FDM = tic;
-FDM_run();
+% FDM_run();
+DATA = FDM_run(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG);
+
 % if DEBUG.SYSTEM.use_GPU
 %     FDM_parallel;
 % else
@@ -188,7 +190,9 @@ toc(Runtime_CPU.FDM);
 % FFT
 %--------------------------------------------------------------------------
 Runtime_CPU.FFT = tic;
-FFT_run();
+% FFT_run();
+DATA = FFT_run(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG);
+
 % if DEBUG.SYSTEM.use_GPU
 %     FFT_parallel;
 % else
@@ -214,7 +218,9 @@ toc(Runtime_CPU.FFT);
 
 
 %% Visualization: Plots & Graphs
-if DEBUG.GRAPHS.general; GRAPH_; end
+if DEBUG.GRAPHS.general;
+    GRAPH_(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG);
+end
 
 disp('CPU::: TOTAL TIME');
 toc(Runtime_CPU.TOTAL);
@@ -243,9 +249,9 @@ if DATA_FLAG
     DATA_file.vars{n} = 'FFT';n=n+1;
     DATA_file.vars{n} = 'FSF';n=n+1;
     PARAMS_.vars{n} = 1;
-    DATA_.fpath = [SaveDirectory '\' 'DATA_.mat'];
-    if exist('SaveDirectory')
-        DATA_.fpath = [SaveDirectory '\' 'DATA_.mat'];
+    DATA_.fpath = [DATA.PARAMS_.saveDir '\' 'DATA_.mat'];
+    if exist(DATA.PARAMS_.saveDir, 'dir')
+        DATA_.fpath = [DATA.PARAMS_.saveDir '\' 'DATA_.mat'];
     else
         DATA_.fpath = [pwd '\' 'DATA_.mat'];
     end

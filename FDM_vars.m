@@ -1,4 +1,5 @@
-function [] = FDM_vars(SPACE, TIME, PULSE, ITP)
+function [DATA] = FDM_vars(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG)
+
 %% FDM
 
 % sanity check
@@ -12,7 +13,7 @@ function [] = FDM_vars(SPACE, TIME, PULSE, ITP)
             
             
 %%
-
+SaveDirectory = DATA.PARAMS_.saveDir;
 %**************************************************************************
 %   Real Wavefunction
 %--------------------------------------------------------------------------

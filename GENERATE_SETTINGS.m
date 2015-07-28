@@ -218,11 +218,12 @@ TIME.critical = (2*me/hPlanck)*(SPACE.delta)^2;
 % TIME.N = 2.0e6;
 
 % TIME.N = 1e6;
-TIME.N = 1e5;
+% TIME.N = 1e5;
+TIME.N = 1e4;
 
 TIME.delta = TIME.critical*5e-2;
 TIME.length = TIME.N*TIME.delta;
-TIME.save = 2e4;
+TIME.save = 1e3;
 TIME.saveNum = length(TIME.save:TIME.save:TIME.N);
 
 TIME.FramesPerSec = 10;
@@ -1346,7 +1347,10 @@ end
     
 % SaveRoot = uigetdir(['../___DATA'],'Please determine root filepath');
 
-prefix = '../___Simulation_Parameter_Files';
+DEBUG.prefix = '../___Simulation_Parameter_Files';
+if ~exist(DEBUG.prefix, 'dir')
+    mkdir(DEBUG.prefix);
+end
 
 
 if DEBUG.DetailedFileName
@@ -1539,7 +1543,7 @@ EnergyParams_txt = sprintf(['SRC[' ...
 ParamFileName_txt = [SolutionSpace_txt ',' EnergyParams_txt ',' Analysis_txt ',' BCs_txt];
 
 else
-    ShortNameNum = num2str(length(dir(fullfile(prefix,'*.mat'))),'%04.0f');
+    ShortNameNum = num2str(length(dir(fullfile(DEBUG.prefix,'*.mat'))),'%04.0f');
     ParamFileName_txt = ['SIM_parameter_file(' num2str(ShortNameNum) ')'];
 
 end
@@ -1547,7 +1551,7 @@ end
 
 %%
 
-[ChooseParamName, ChooseParamPath] = uiputfile([prefix '/' ParamFileName_txt '.mat']);
+[ChooseParamName, ChooseParamPath] = uiputfile([DEBUG.prefix '/' ParamFileName_txt '.mat']);
 
 % [ChooseParamName, ChooseParamPath] = uiputfile(['../___Simulation_Parameter_Files/*.mat']);
 if ~(ChooseParamName==0)
