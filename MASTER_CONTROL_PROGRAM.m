@@ -228,7 +228,7 @@ toc(Runtime_CPU.TOTAL);
 %% Motion Pictures: Recorded Movies
 % Record & Save Video
 if DEBUG.VIDEO.movie_ALL
-    RECORD_MOVIE;
+    DATA = RECORD_MOVIE(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG);
 end
 
 if DEBUG.VIDEO.movie_WaveFunction

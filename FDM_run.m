@@ -136,24 +136,11 @@ fprintf('\t\t... DONE!\n\n');
 
 %% Potential Energy Map
 
-% V_eff = zeros(SPACE.N, 1);
-V_sys = PotentialCoulomb(SIM, SPACE, PULSE);
-% V_eff = V_atom;
+DATA = MaxPotential(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG);
 
-% Maximum 
-V_max = (1+e0*LASER.E0)*max(V_sys);
-V_min = (1+e0*LASER.E0)*min(V_sys);
-
-if abs(V_min)>abs(V_max)*1e1; V_min = -abs(mean(V_sys))*5; end
-if abs(V_max)>abs(V_min)*1e1; V_max = abs(mean(V_sys))*5; end
-
-if V_max==0; V_max = 0.1*abs(mean(V_min)); end
-if V_min==0; V_min = -0.1*abs(mean(V_max)); end
-
-if (V_min==0)&&(V_max==0); V_max = abs(e0); V_min = e0; end
-
-% if abs(V_min)>abs(V_max)*1e1; V_min = -abs(V_max)*10; end
-% if abs(V_max)>abs(V_min)*1e1; V_max = abs(V_min)*10; end
+V_sys = DATA.V_.Vsys;
+V_max = DATA.V_.Vmax;
+V_min = DATA.V_.Vmin;
 
 
 
@@ -348,14 +335,14 @@ if (DEBUG.VIDEO.animate)&&(rem(t, TIME.animate)==0)
     
 % Psi(R+I), PDF, Vc
     if strcmpi(DEBUG.VIDEO.animate_,'all')
-animateWavefunction(R_current, I_current, prob_density, V_eff, V_min, V_max, WaveMax,PdfMax,...
+fig0 = animateWavefunction(R_current, I_current, prob_density, V_eff, V_min, V_max, WaveMax,PdfMax,...
     t, TIME.delta, SPACE);
 pause(0.001); 
     end
     
 % Psi(R+I), PDF
     if strcmpi(DEBUG.VIDEO.animate_,'wavefunction')
-animateWavefunction_NO_WELL(R_current, I_current, prob_density, V_eff,...
+fig0 = animateWavefunction_NO_WELL(R_current, I_current, prob_density, V_eff,...
     t, TIME.delta, SPACE);
 pause(0.001); 
         
@@ -363,7 +350,7 @@ pause(0.001);
     
 % Vc
     if strcmpi(DEBUG.VIDEO.animate_,'potential')
-animatePotentialWell(V_eff,t, TIME.delta, SPACE);
+fig0 = animatePotentialWell(V_eff,t, TIME.delta, SPACE);
 pause(0.001); 
     end
           
@@ -527,7 +514,9 @@ if show_t<1e4; show_t = 1e4; end
 end
 
 
-
+if (DEBUG.VIDEO.animate)
+    close(fig0);
+end
 
 % Come up with a better method to make sure memory index stepping isn't
 % stupid.

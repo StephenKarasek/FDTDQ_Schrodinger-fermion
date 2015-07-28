@@ -1,9 +1,10 @@
+function [DATA] = RECORD_MOVIE(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG)
 %% RECORD_MOVIE
 
 
 close all hidden;
 
-
+CONSTANTS;
 
 
 %% Load in vars
@@ -16,17 +17,28 @@ close all hidden;
 % PDF = (Psi_REAL.^2.*(1i*Psi_IMAG).^2);
 
 
-    load([SaveDirectory '/PARAMS_']);
-    load([SaveDirectory '/PDF_pos'], 'PDF_pos');
-    load([SaveDirectory '/Psi_REAL'], 'Psi_REAL');
-    load([SaveDirectory '/Psi_IMAG'], 'Psi_IMAG');
-    load([SaveDirectory '/V_pot'], 'V_pot');
+    load([DATA.PARAMS_.saveDir '/PARAMS_']);
+    load([DATA.PARAMS_.saveDir '/PDF_pos'], 'PDF_pos');
+    load([DATA.PARAMS_.saveDir '/Psi_REAL'], 'Psi_REAL');
+    load([DATA.PARAMS_.saveDir '/Psi_IMAG'], 'Psi_IMAG');
+    load([DATA.PARAMS_.saveDir '/V_pot'], 'V_pot');
 
 % PDF_pos = (conj(Psi_REAL+Psi_IMAG*1i).*(Psi_REAL+Psi_IMAG*1i));
 
 
-Vmin = V_min;
-Vmax = V_max;
+DATA = MaxPotential(SPACE, TIME, SIM, PULSE, ITP, LASER, DATA, DEBUG);
+
+% Vsys = DATA.V_.Vsys;
+Vmax = DATA.V_.Vmax;
+Vmin = DATA.V_.Vmin;
+
+
+WaveMax = sqrt(sum(abs(sqrt(PDF_pos(1,:)))/2)/SPACE.N);
+PdfMax = (WaveMax/2)^2;
+
+
+% Vmin = V_min;
+% Vmax = V_max;
 % Vmin = min(min(min(V_pot)));
 % Vmax = abs(Vmin);
 %  Psi_REAL = Psi_REAL/5;
@@ -154,7 +166,7 @@ if DEBUG.DetailedFileName
     SaveVideoName = [LaserInfo_ ',' Estate_ ',' R0_ ',' BC_ ' .png'];
 else
 %     PARAMS_.saveVisual;
-% PARAMS_.saveDir '\' ...
+% DATA.PARAMS_.saveDir '\' ...
    SaveVideoName = ...
        ['Vid[' SIM.PotentialMap ';' num2str(LASER.I0, '%2.1e') ...
        '(W.cm-2);' num2str(LASER.l0, '%2.1e') '(nm)]'];
@@ -184,8 +196,8 @@ OPTIONS.CompressionType_ = 'Motion JPEG AVI';
 timestamp = datestr(clock);
 timestamp = regexprep(timestamp, '(\s)', '_');
 timestamp = regexprep(timestamp, '([:])', '-');
-MovieFilePathName = [PARAMS_.saveDir '\' '(' timestamp ')_' SaveVideoName '.avi'];
-% MovieFilePathName = [PARAMS_.saveDir '\' SaveVideoName '.avi'];
+MovieFilePathName = [DATA.PARAMS_.saveDir '\' '(' timestamp ')_' SaveVideoName '.avi'];
+% MovieFilePathName = [DATA.PARAMS_.saveDir '\' SaveVideoName '.avi'];
 
 
 
@@ -384,7 +396,7 @@ set(fig0,'Renderer','zbuffer');
         'FontWeight','bold', 'FontSize',12, 'FontAngle', 'normal');
 
     set(get(POTENTIALPLOT.haxes, 'Xlabel'), 'String', 'X-Distance (m)',...
-        'VerticalAlignment','cap', 'HorizontalAlignment','center',...
+        'VerticalAlignment','top', 'HorizontalAlignment','center',...
         'FontWeight','bold', 'FontSize',14, 'FontAngle', 'normal');
 %--------------------------------------------------------------------------
 
@@ -407,4 +419,9 @@ close(writerObj)
 
 
 
-% end
+%%
+close(fig0);
+
+
+
+end

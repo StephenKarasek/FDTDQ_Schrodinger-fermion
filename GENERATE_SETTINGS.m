@@ -217,13 +217,13 @@ TIME.critical = (2*me/hPlanck)*(SPACE.delta)^2;
 % TIME.N = 3.90e6;
 % TIME.N = 2.0e6;
 
-% TIME.N = 1e6;
+TIME.N = 1e6;
 % TIME.N = 1e5;
-TIME.N = 1e4;
+% TIME.N = 1e4;
 
 TIME.delta = TIME.critical*5e-2;
 TIME.length = TIME.N*TIME.delta;
-TIME.save = 1e3;
+TIME.save = 5e4;
 TIME.saveNum = length(TIME.save:TIME.save:TIME.N);
 
 TIME.FramesPerSec = 10;
@@ -764,7 +764,7 @@ LASER.Type = 'CW';
 %++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 % 10a0 WELL
 %..........................................................................
-LASER.l0 = 800e-9; LASER.nPhoton = 1; LASER.I0 = 0e0;
+% LASER.l0 = 800e-9; LASER.nPhoton = 1; LASER.I0 = 0e0;
 % LASER.l0 = 800e-9; LASER.nPhoton = 1; LASER.I0 = 3.5e10;
 % LASER.l0 = 800e-9; LASER.nPhoton = 1; LASER.I0 = 3.5e14;
 % LASER.l0 = 100e-9; LASER.nPhoton = 1; LASER.I0 = 3.5e12;
@@ -774,7 +774,7 @@ LASER.l0 = 800e-9; LASER.nPhoton = 1; LASER.I0 = 0e0;
 % LASER.l0 = 306.95e-9; LASER.nPhoton = 1; LASER.I0 = 5e10;
 % LASER.l0 = 306.95e-9; LASER.nPhoton = 1; LASER.I0 = 2.5e11;
 % LASER.l0 = 306.95e-9; LASER.nPhoton = 1; LASER.I0 = 1e12;
-% LASER.l0 = 306.95e-9; LASER.nPhoton = 1; LASER.I0 = 3.33e12;
+LASER.l0 = 306.95e-9; LASER.nPhoton = 1; LASER.I0 = 3.33e12;
 % LASER.l0 = 306.95e-9; LASER.nPhoton = 1; LASER.I0 = 1e13;
 % LASER.l0 = 306.95e-9; LASER.nPhoton = 1; LASER.I0 = 2.5e13;
 % LASER.l0 = 306.95e-9; LASER.nPhoton = 1; LASER.I0 = 5.5e13;
@@ -1329,6 +1329,58 @@ DEBUG.Observables_F.FreqShift = true;
 
 
 
+
+
+
+
+
+
+
+
+
+%% Stability
+
+
+% V_eff = zeros(SPACE.N, 1);
+V_sys = PotentialCoulomb(SIM, SPACE, PULSE);
+% V_eff = V_atom;
+
+% Maximum 
+V_max = (1+e0*LASER.E0)*max(V_sys);
+V_min = (1+e0*LASER.E0)*min(V_sys);
+
+
+T_crit = (hPlanck/((hPlanck^2/(me*SPACE.delta^2))+V_max));
+
+if T_crit<=TIME.delta
+    Q_str = sprintf('WARNING! Time step is too large for spatial step and maximum potential over grid. Simulation will become unstable.');
+    Q_opt1 = sprintf('Halt generation and reduce time step');
+    Q_opt2 = sprintf('Continue anyways (probable failure)');
+    hCRIT = questdlg(Q_str, 'Simulation Unstable!', Q_opt1, Q_opt2, Q_opt1);
+    
+    switch hCRIT
+        case Q_opt1
+        Tcrit_str = sprintf(['\tTime Step >= Critical Time Step...\n\n'...
+            '\t-->\t\tGeneration halted. Please reduce time step and try again.\n\n']);
+        error(Tcrit_str);
+            break;
+            
+        case Q_opt2
+        Tcrit_str = sprintf(['\tTime Step >= Critical Time Step...\n\n'...
+            '\t-->\t\tCAUTION! Time step very likely to result in simulation instability.\n\n']);
+        warning(Tcrit_str);
+            
+    end
+    
+else
+    Tcrit_str = sprintf(['\tTime Step >= Critical Time Step...\n\n'...
+            '\t-->\t\tPASSED! Simulation will be stable.\n\n']);
+        fprintf(Tcrit_str);
+end
+
+
+
+
 %% SAVE SETTINGS
 
 % Memory Management
@@ -1549,7 +1601,7 @@ else
 end
 
 
-%%
+%% Save
 
 [ChooseParamName, ChooseParamPath] = uiputfile([DEBUG.prefix '/' ParamFileName_txt '.mat']);
 
